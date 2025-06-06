@@ -2,9 +2,18 @@ const express = require('express');
 const fetch = require('node-fetch');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Log the contents of the root directory and public directory for debugging
+console.log('Root directory contents:', fs.readdirSync(__dirname));
+try {
+  console.log('Public directory contents:', fs.readdirSync(path.join(__dirname, 'public')));
+} catch (error) {
+  console.error('Error reading public directory:', error.message);
+}
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
