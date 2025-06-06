@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrdinaryAI</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      color: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      justify-content: center;
+    }
+
+    .top-right {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .top-right button {
+      background: none;
+      border: none;
+      font-size: 1.2em;
+      cursor: pointer;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      font-size: 2em;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .logo::before {
+      content: '⦿';
+      margin-right: 10px;
+      font-size: 1.2em;
+    }
+
+    .chat-container {
+      width: 100%;
+      max-width: 700px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #chat-history {
+      width: 100%;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+    }
+
+    .message {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: left;
+    }
+
+    .user-message {
+      background-color: #e0e0e0;
+      margin-left: 20%;
+    }
+
+    .ai-message {
+      background-color: #d0d0d0;
+      margin-right: 20%;
+    }
+
+    .input-container {
+      width: 100%;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    #user-input {
+      width: 100%;
+      border: none;
+      outline: none;
+      font-size: 1em;
+      resize: none;
+      margin-bottom: 10px;
+    }
+
+    .input-footer {
+      display: flex;
+      justify-content: flex-end;
+      width: 100%;
+      align-items: center;
+    }
+
+    .input-footer-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #ai-model {
+      padding: 5px;
+      font-size: 0.9em;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .send-button {
+      background: none;
+      border: none;
+      font-size: 1.5em;
+      cursor: pointer;
+    }
+
+    @media (max-width: 600px) {
+      .chat-container {
+        padding: 10px;
+      }
+
+      .user-message, .ai-message {
+        margin-left: 10px;
+        margin-right: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-right">
+    <button>☰</button>
+    <button>≡</button>
+    <button>Ⓑ</button>
+  </div>
+  <div class="logo">OrdinaryAI</div>
+  <div class="chat-container">
+    <div id="chat-history"></div>
+    <div class="input-container">
+      <textarea id="user-input" placeholder="What do you want to know?" rows="1"></textarea>
+      <div class="input-footer">
+        <div class="input-footer-right">
+          <select id="ai-model">
+            <option value="meta-llama/llama-3-70b-instruct" selected>OrdinaryAI1</option>
+          </select>
+          <button class="send-button" onclick="sendMessage()">⬆️</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    async function sendMessage() {
+      const userInput = document.getElementById('user-input').value;
+      const model = document.getElementById('ai-model').value;
+      const chatHistory = document.getElementById('chat-history');
+
+      if (!userInput.trim()) return;
+
+      const userMessage = document.createElement('div');
+      userMessage.className = 'message user-message';
+      userMessage.textContent = userInput;
+      chatHistory.appendChild(userMessage);
+
+      document.getElementById('user-input').value = '';
+
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: userInput, model })
+        });
+
+        const data = await response.json();
+        const aiMessage = document.createElement('div');
+        aiMessage.className = 'message ai-message';
+        aiMessage.textContent = data.response || 'Error: No response from AI';
+        chatHistory.appendChild(aiMessage);
+
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+      } catch (error) {
+        console.error('Error:', error);
+        const errorMessage = document.createElement('div');
+        errorMessage.className = 'message ai-message';
+        errorMessage.textContent = 'Error: Unable to reach the server';
+        chatHistory.appendChild(errorMessage);
+      }
+    }
+
+    document.getElementById('user-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
