@@ -1,3 +1,5 @@
+require('dotenv').config(); // Load .env variables at the very top
+
 const express = require('express');
 const fetch = require('node-fetch');
 const cors = require('cors');
@@ -34,7 +36,7 @@ app.post('/api/chat', async (req, res) => {
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer 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',
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -44,7 +46,7 @@ app.post('/api/chat', async (req, res) => {
     });
 
     const data = await response.json();
-    console.log('OpenRouter response:', JSON.stringify(data, null, 2)); // Debugging output
+    console.log('OpenRouter response:', JSON.stringify(data, null, 2)); // For debugging
 
     if (!data.choices || !data.choices.length) {
       return res.status(500).json({
@@ -57,7 +59,7 @@ app.post('/api/chat', async (req, res) => {
     res.json({ response: aiResponse });
 
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error contacting OpenRouter:', error);
     res.status(500).json({ error: 'Failed to fetch response from OpenRouter' });
   }
 });
