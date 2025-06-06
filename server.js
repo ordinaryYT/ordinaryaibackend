@@ -7,20 +7,19 @@ const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Log the contents of the root directory and public directory for debugging
+// Enable JSON parsing and CORS
+app.use(express.json());
+app.use(cors());
+
+// Log the contents of the root directory for debugging
 console.log('Root directory contents:', fs.readdirSync(__dirname));
-try {
-  console.log('Public directory contents:', fs.readdirSync(path.join(__dirname, 'public')));
-} catch (error) {
-  console.error('Error reading public directory:', error.message);
-}
 
-// Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files from the root directory
+app.use(express.static(__dirname));
 
-// Default route to serve index.html
+// Default route to serve index.html from root
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // API route for chat
@@ -31,7 +30,7 @@ app.post('/api/chat', async (req, res) => {
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer YOUR_OPENROUTER_API_KEY',
+        'Authorization': 'Bearer YOUR_OPENROUTER_API_KEY', // Replace this
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -41,7 +40,7 @@ app.post('/api/chat', async (req, res) => {
     });
 
     const data = await response.json();
-    const aiResponse = data.choices[0].message.content;
+    const aiResponse = data.choices?.[0]?.message?.content || 'No response';
     res.json({ response: aiResponse });
   } catch (error) {
     console.error('Error:', error);
@@ -49,6 +48,7 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+// Start server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
