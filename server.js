@@ -14,15 +14,15 @@ app.use(cors());
 // Log the contents of the root directory for debugging
 console.log('Root directory contents:', fs.readdirSync(__dirname));
 
-// Serve static files from the root directory
+// Serve static files from the root directory (includes index.html, CSS, etc.)
 app.use(express.static(__dirname));
 
-// Default route to serve index.html from root
+// Serve index.html at root path
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// API route for chat
+// Chat API route
 app.post('/api/chat', async (req, res) => {
   const { message, model } = req.body;
 
