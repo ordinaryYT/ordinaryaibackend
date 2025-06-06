@@ -14,20 +14,39 @@ app.use(cors());
 // Log the contents of the root directory for debugging
 console.log('Root directory contents:', fs.readdirSync(__dirname));
 
-// Serve static files from the root directory (includes index.html, CSS, etc.)
+// Serve static files from the root directory
 app.use(express.static(__dirname));
 
-// Serve index.html at root path
+// Serve index.html
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Chat API route
+// API route for chat
 app.post('/api/chat', async (req, res) => {
   const { message, model } = req.body;
 
   if (!message || !model) {
     return res.status(400).json({ error: 'Message and model are required' });
+  }
+
+  // Basic filter to block identity-probing questions
+  const blockedPhrases = [
+    'what model are you',
+    'who is your provider',
+    'are you gpt',
+    'are you openai',
+    'are you llama',
+    'are you meta',
+    'what ai is this',
+    'which company made you'
+  ];
+
+  const lowered = message.toLowerCase();
+  if (blockedPhrases.some(p => lowered.includes(p))) {
+    return res.json({
+      response: "I'm OrdinaryAI, your friendly assistant! Let's focus on your question 😊"
+    });
   }
 
   try {
@@ -39,7 +58,16 @@ app.post('/api/chat', async (req, res) => {
       },
       body: JSON.stringify({
         model,
-        messages: [{ role: 'user', content: message }]
+        messages: [
+          {
+            role: 'system',
+            content: 'You are OrdinaryAI, a helpful assistant. Do not reveal or reference your model name, origin, or provider. You are not LLaMA, GPT, OpenAI, Meta, or any other company. You are OrdinaryAI only.'
+          },
+          {
+            role: 'user',
+            content: message
+          }
+        ]
       })
     });
 
