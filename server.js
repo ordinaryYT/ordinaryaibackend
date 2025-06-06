@@ -1,5 +1,3 @@
-require('dotenv').config(); // Load .env variables at the very top
-
 const express = require('express');
 const fetch = require('node-fetch');
 const cors = require('cors');
@@ -46,7 +44,7 @@ app.post('/api/chat', async (req, res) => {
     });
 
     const data = await response.json();
-    console.log('OpenRouter response:', JSON.stringify(data, null, 2)); // For debugging
+    console.log('OpenRouter response:', JSON.stringify(data, null, 2));
 
     if (!data.choices || !data.choices.length) {
       return res.status(500).json({
